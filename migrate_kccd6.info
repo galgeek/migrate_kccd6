@@ -1,0 +1,10 @@
+name = "KCC D6 to D7 migration"
+description = "Migrate content from KCC's D6 site to D7"
+package = "Development"
+core = 7.x
+
+dependencies[] = migrate
+dependencies[] = migrate_d2d
+dependencies[] = date_migrate
+
+files[] = node.inc

@@ -1,0 +1,201 @@
+<?php
+
+/**
+ * This was example code for a Drupal 6 to Drupal 7 migration, from the
+ * migrate_d2d_example module. 
+ * Now it is code to migrate KCC's Drupal 6 install to Drupal 7.
+ */
+
+/**
+ * Implements hook_flush_caches().
+ */
+function migrate_kccd6_flush_caches() {
+  migrate_kccd6_register_migrations();
+}
+
+/**
+ * Register all D6->D7 migrations.
+ */
+function migrate_kccd6_register_migrations() {
+  /**
+   * Each migration being registered takes an array of arguments, some required
+   * and some optional. Start with the common arguments required by all - the
+   * source_connection (connection key, set up in settings.php, pointing to
+   * the Drupal 6 database) and source_version (major version of Drupal).
+   */
+  $common_arguments = array(
+    'source_connection' => 'legacy',
+    'source_version' => 6,
+  );
+
+  // The description and the migration machine name are also required arguments,
+  // which will be unique for each migration you register.
+  $arguments = $common_arguments + array(
+    'description' => t('Migration of users from Drupal 6'),
+    'machine_name' => 'User',
+  );
+
+  // We just use the migrate_d2d D6 migration class as-is.
+  Migration::registerMigration('DrupalUser6Migration', $arguments['machine_name'],
+                               $arguments);
+
+
+  // No vocabularies defined in KCC's Drupal 6 install; section deleted
+
+
+/**
+ * Migrate files table
+ */
+// The description and the migration machine name are also required arguments,
+// which will be unique for each migration you register.
+$file_arguments = array(
+  array(
+  'class_name' => 'DrupalFile6Migration',
+  'description' => t('Migration of sites/default/files from Drupal 6'),
+  'machine_name' => 'DefaultFiles',
+  'source_dir' => '/home2/kccorg/public_html/sites/default/files/',
+  'default_uid' => 1,
+  ),
+);
+
+// We just use the migrate_d2d D6 file migration class as-is.
+  foreach ($file_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'], $arguments);
+  }
+
+  // Node migrations - each has its own class derived from the migrate_d2d class,
+  // specifying its particular field mappings and transformations. source_type
+  // and destination_type are required arguments.
+  // 'dependencies' => array('Image', 'Countries', 'Topics'),
+
+  $node_arguments = array(
+    array(
+      'class_name' => 'LineagePageMigration',
+      'description' => t('Migration of Pages under Lineage from Drupal 6'),
+      'machine_name' => 'LineagePages',
+      'source_type' => 'page_lineage',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'DharmaQuoteMigration',
+      'description' => t('Migration of dharma quotes from Drupal 6'),
+      'machine_name' => 'DharmaQuote',
+      'source_type' => 'dharma_quote',
+      'destination_type' => 'article',
+    ),
+    array(
+      'class_name' => 'AboutPageMigration',
+      'description' => t('Migration of Pages under About from Drupal 6'),
+      'machine_name' => 'AboutPages',
+      'source_type' => 'page_about',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'ActivitiesPageMigration',
+      'description' => t('Migration of Pages under Activities from Drupal 6'),
+      'machine_name' => 'MeditatePages',
+      'source_type' => 'page_activities',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'ResourcesPageMigration',
+      'description' => t('Migration of Pages under Resources from Drupal 6'),
+      'machine_name' => 'StudyPages',
+      'source_type' => 'page_resources',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'SupportKCCPageMigration',
+      'description' => t('Migration of Pages under Support KCC from Drupal 6'),
+      'machine_name' => 'SuppportKCCPages',
+      'source_type' => 'page_support',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'UpcomingEventMigration',
+      'description' => t('Migration of Upcoming Events from Drupal 6'),
+      'machine_name' => 'UpcomingEvents',
+      'source_type' => 'upcoming_events',
+      'destination_type' => 'event',
+    ),
+    array(
+      'class_name' => 'RetreatMigration',
+      'description' => t('Migration of Retreat events from Drupal 6'),
+      'machine_name' => 'RetreatEvents',
+      'source_type' => 'create_retreat',
+      'destination_type' => 'event',
+    ),
+    array(
+      'class_name' => 'PolicyMigration',
+      'description' => t('Migration of Policies from Drupal 6'),
+      'machine_name' => 'PolicyNodes',
+      'source_type' => 'policy_procedure',
+      'destination_type' => 'policy',
+    ),
+    array(
+      'class_name' => 'ContactUsPageMigration',
+      'description' => t('Migration of Pages under Contact Us from Drupal 6'),
+      'machine_name' => 'ContactUsPages',
+      'source_type' => 'page_contact',
+      'destination_type' => 'page',
+    ),
+    array(
+      'class_name' => 'ReportPageMigration',
+      'description' => t('Migration of Pages under Upload Minutes from Drupal 6'),
+      'machine_name' => 'ReportPages',
+      'source_type' => 'upload_minutes',
+      'destination_type' => 'reports',
+    ),
+    array(
+      'class_name' => 'RetreatCommitteePageMigration',
+      'description' => t('Migration of Pages under Upload Minutes from Drupal 6'),
+      'machine_name' => 'RetreatCommitteePages',
+      'source_type' => 'page_about',
+      'destination_type' => 'reports',
+    ),
+  );
+  // Tell the node migrations where the users are coming from, so they can
+  // set up the dependency and resolve D6->D7 uids.
+  $common_node_arguments = $common_arguments + array(
+    'user_migration' => 'User',
+  );
+  foreach ($node_arguments as $arguments) {
+    $arguments = array_merge_recursive($arguments, $common_node_arguments);
+    Migration::registerMigration($arguments['class_name'], $arguments['machine_name'],
+                                 $arguments);
+  }
+
+/**
+  // Menu migrations -- same requirements as users
+  $menu_arguments = $common_arguments + array(
+    'description' => t('Migration of menus from Drupal 6'),
+    'machine_name' => 'Menu',
+  );
+
+  // We just use the migrate_d2d D6 migration class as-is.
+  Migration::registerMigration('DrupalMenu6Migration', $menu_arguments['machine_name'],
+                               $menu_arguments);
+
+  // Menu links migrations -- basic requirements, plus must set up menu dependency
+  $menu_links_arguments = $common_arguments + array(
+    'description' => t('Migration of menu links from Drupal 6'),
+    'machine_name' => 'MenuLinks',
+    'menu_migration' => $menu_arguments['machine_name'],
+  );
+  Migration::registerMigration('DrupalMenuLinks6Migration', $menu_links_arguments['machine_name'],
+                               $menu_links_arguments);
+ */
+}
+
+
+
+/**
+ * Implements hook_migrate_api().
+ */
+function migrate_kccd6_migrate_api() {
+  $api = array(
+    'api' => 2,
+  );
+  return $api;
+}
